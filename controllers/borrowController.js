@@ -57,7 +57,6 @@ function parseItems(items) {
     return wanted;
 }
 
-// POST /api/borrow  { reader_id, due_date, items: [{ book_id, quantity }] }
 async function borrowBook(req, res) {
     const { reader_id, due_date, items } = req.body;
 
