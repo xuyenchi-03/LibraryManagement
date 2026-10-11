@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+require("dotenv").config({
+    path: require("path").join(__dirname, ".env")
+});
 
 const { errorHandler, notFound } = require("./middleware/errorMiddleware");
 
@@ -19,7 +21,6 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// CORS_ORIGIN (tùy chọn): ví dụ http://127.0.0.1:5500 ; bỏ trống = cho mọi origin (chỉ dùng khi phát triển)
 app.use(cors(process.env.CORS_ORIGIN ? { origin: process.env.CORS_ORIGIN } : undefined));
 app.use(express.json());
 
