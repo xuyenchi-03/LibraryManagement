@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Độc giả – The Quiet Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <main class="content" id="page"></main>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/crud.js"></script>
+  <script>
+    const { api, esc, modal, toast } = Lib;
+    
+    const fmt = (d) => (d ? d.split('-').reverse().join('/') : '—');
+    
+    const badge = (r) => r.detail_status === 'RETURNED'
+      ? (r.is_late ? '<span class="badge warning">Trả trễ</span>' : '<span class="badge success">Đã trả</span>')
+      : (r.is_overdue ? '<span class="badge danger">Quá hạn</span>' : '<span class="badge info">Đang mượn</span>');
+
+    async function history(reader) {
+      try {
+        const h = await api('/readers/' + reader.id + '/borrow-history');
+        
+        const body = h.length ? `
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã phiếu</th>
+                  <th>Sách</th>
+                  <th>Ngày mượn</th>
+                  <th>Hạn trả</th>
+                  <th>Ngày trả</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${h.map((r) => `
+                  <tr>
+                    <td>${esc(r.slip_code)}</td>
+                    <td>${esc(r.title)}${r.quantity > 1 ? ` <span class="sub">× ${r.quantity}</span>` : ''}</td>
+                    <td>${fmt(r.borrow_date)}</td>
+                    <td>${fmt(r.due_date)}</td>
+                    <td>${fmt(r.return_date)}</td>
+                    <td>${badge(r)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : `
+          <div class="state">
+            <b>Chưa mượn sách nào</b>
+            Lịch sử sẽ hiện ở đây sau phiếu mượn đầu tiên.
+          </div>
+        `;
+        
+        modal({ title: 'Lịch sử mượn – ' + reader.full_name, body, wide: true });
+      } catch (e) { 
+        toast(e.message, 'error'); 
+      }
+    }
+
+    Crud({
+      title: 'Độc giả', 
+      active: 'readers.html', 
+      subtitle: 'Thông tin độc giả và lịch sử mượn sách.',
+      addLabel: 'Thêm độc giả', 
+      noun: 'độc giả', 
+      endpoint: '/readers', 
+      nameKey: 'full_name',
+      searchPlaceholder: 'Tìm theo tên, mã, email hoặc số điện thoại', 
+      searchKeys: ['full_name', 'reader_code', 'email', 'phone'],
+      deleteWarn: 'Không xóa được độc giả đã có lịch sử mượn.',
+      columns: [
+        { label: 'Mã', key: 'reader_code' },
+        { label: 'Họ tên', render: (r) => `<b>${esc(r.full_name)}</b>` },
+        { label: 'Email', key: 'email' }, 
+        { label: 'Điện thoại', key: 'phone' }, 
+        { label: 'Địa chỉ', key: 'address' }
+      ],
+      fields: [
+        { 
+          name: 'full_name', 
+          label: 'Họ tên', 
+          required: true, 
+          max: 100, 
+          placeholder: 'Ví dụ: Trần Văn An' 
+        },
+        { 
+          name: 'email', 
+          label: 'Email', 
+          max: 100, 
+          placeholder: 'Không bắt buộc', 
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, 
+          patternMsg: 'Email chưa đúng định dạng.' 
+        },
+        { 
+          name: 'phone', 
+          label: 'Số điện thoại', 
+          max: 20, 
+          placeholder: 'Không bắt buộc', 
+          pattern: /^[0-9+()\-.\s]{6,20}$/, 
+          patternMsg: 'Số điện thoại chưa hợp lệ.' 
+        },
+        { 
+          name: 'address', 
+          label: 'Địa chỉ', 
+          max: 255, 
+          placeholder: 'Không bắt buộc' 
+        }
+      ],
+      extra: [
+        { act: 'history', icon: 'clipboard', title: 'Lịch sử mượn', run: history }
+      ]
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập – The Quiet Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="auth">
+    <section class="auth-brand">
+      <div class="mark">
+        <span class="logo big" id="logo"></span>
+        <h1>The Quiet<br>Archive</h1>
+        <p class="tag">Thư viện của những trang sách yên tĩnh</p>
+        <p class="quote">Every book has a place. Every story finds its reader.</p>
+      </div>
+      <p class="foot-quote">“Một thư viện không chỉ là nơi chứa sách.”</p>
+    </section>
+    <section class="auth-form">
+      <form id="login" novalidate>
+        <h2>Chào mừng trở lại</h2>
+        <p class="lead">Đăng nhập để vào kho lưu trữ.</p>
+        <div class="alert error" id="msg" hidden></div>
+        <div class="field">
+          <label for="username">Tên đăng nhập</label>
+          <input class="input" id="username" autocomplete="username" autofocus>
+        </div>
+        <div class="field">
+          <label for="password">Mật khẩu</label>
+          <div class="pw">
+            <input class="input" id="password" type="password" autocomplete="current-password">
+            <button class="btn-icon" type="button" id="toggle" aria-label="Hiện mật khẩu" aria-pressed="false"></button>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit" id="submit">Đăng nhập</button>
+        <p class="auth-foot">Hệ thống quản lý thư viện</p>
+      </form>
+    </section>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    (function () {
+      const { api, Auth, CONFIG, icon } = Lib;
+      
+      document.getElementById('logo').innerHTML = icon('book', 28);
+      
+      const pw = document.getElementById('password');
+      const tg = document.getElementById('toggle');
+      
+      tg.innerHTML = icon('eye', 18);
+      
+      tg.onclick = () => { 
+        const show = pw.type === 'password'; 
+        pw.type = show ? 'text' : 'password'; 
+        tg.setAttribute('aria-pressed', show); 
+        tg.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'); 
+        pw.focus(); 
+      };
+      
+      if (Auth.token) { 
+        location.replace(CONFIG.HOME); 
+        return; 
+      }
+      
+      const msg = document.getElementById('msg');
+      
+      function show(text, type) { 
+        msg.textContent = text; 
+        msg.className = 'alert ' + type; 
+        msg.hidden = false; 
+      }
+      
+      if (new URLSearchParams(location.search).get('expired')) {
+        show('Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.', 'info');
+      }
+
+      document.getElementById('login').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (!username || !password) { 
+          show('Nhập tên đăng nhập và mật khẩu.', 'error'); 
+          return; 
+        }
+        
+        const btn = document.getElementById('submit');
+        btn.disabled = true; 
+        btn.textContent = 'Đang đăng nhập...'; 
+        msg.hidden = true;
+        
+        Auth.clear();
+        
+        try {
+          const r = await api('/auth/login', { 
+            method: 'POST', 
+            body: { username, password } 
+          });
+          Auth.save(r.token, r.user);
+          location.replace(CONFIG.HOME);
+        } catch (err) {
+          show(err.message, 'error');
+          btn.disabled = false; 
+          btn.textContent = 'Đăng nhập';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

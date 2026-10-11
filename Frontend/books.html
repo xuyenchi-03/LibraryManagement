@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sách – The Quiet Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <main class="content">
+        <div class="page-head">
+          <div>
+            <h1>Quản lý sách</h1>
+            <p>Số bản còn lại và tình trạng mượn của từng đầu sách.</p>
+          </div>
+          <button class="btn btn-primary" id="add">
+            <i data-icon="plus"></i>Thêm sách
+          </button>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <label class="search">
+              <i data-icon="search"></i>
+              <input class="input" id="q" placeholder="Tìm theo tên sách, tác giả hoặc thể loại" aria-label="Tìm sách">
+            </label>
+            <select class="input" id="cat" style="width:180px" aria-label="Lọc theo thể loại">
+              <option value="">Mọi thể loại</option>
+            </select>
+            <select class="input" id="avail" style="width:160px" aria-label="Lọc theo tình trạng">
+              <option value="">Mọi tình trạng</option>
+              <option value="yes">Còn sách</option>
+              <option value="no">Hết sách</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sách</th>
+                  <th>Tác giả</th>
+                  <th>Thể loại</th>
+                  <th class="num">Tổng</th>
+                  <th class="num">Còn lại</th>
+                  <th>Tình trạng</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="pager"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+  
+  <script src="js/app.js"></script>
+  <script src="js/books.js"></script>
+</body>
+</html>
